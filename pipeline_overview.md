@@ -54,6 +54,35 @@ DADA2 filtering step to 0 which is the default DADA2 parameter (but set to 3 by 
 in favor of the maxEE filter (See discussion `https://github.com/benjjneb/dada2/issues/1125` and
 `https://github.com/benjjneb/dada2/issues/1216`).
 
+### Error model selection (`--error_model`)
+The DADA2 error model is critical for accurate ASV inference. Different sequencing platforms
+produce quality scores with different characteristics, and the error estimation function must
+match the data:
+
+* **PacBio Sequel / Sequel II** (continuous Q-scores, Q0-Q93): Uses `PacBioErrfun`, which
+  handles the special Q93 "perfect consensus" bin with a separate maximum-likelihood estimate.
+* **PacBio Revio / Kinnex** (binned Q-scores, 7 bins, max Q40): Uses `makeBinnedQualErrfun`,
+  which performs piecewise linear interpolation between bin centers instead of loess smoothing.
+  This avoids the non-monotonic "bumpy" error curves that occur when loess is applied to
+  sparse, discrete quality score distributions
+  (see [DADA2 Issue #1892](https://github.com/benjjneb/dada2/issues/1892),
+  [#2041](https://github.com/benjjneb/dada2/issues/2041),
+  [#2107](https://github.com/benjjneb/dada2/issues/2107)).
+* **Illumina NovaSeq / NextSeq** (binned Q-scores, ~4 bins): Also uses `makeBinnedQualErrfun`.
+* **Illumina MiSeq / HiSeq** (continuous Q-scores): Uses the standard `loessErrfun`.
+* **ONT** (variable Q-score distributions): May benefit from `binned` mode depending on
+  basecaller version.
+
+By default (`--error_model auto`), the pipeline samples quality scores from the first 5,000
+reads of the input data and auto-detects the appropriate function:
+1. If Q93 is present -> `PacBioErrfun` (Sequel/Sequel II)
+2. If 15 or fewer unique Q values -> `makeBinnedQualErrfun` (binned platforms)
+3. Otherwise -> `loessErrfun` (continuous Q-score platforms)
+
+For backward compatibility with older PacBio data, you can force the legacy behavior with
+`--error_model pacbio`. A polyfill implementation of `makeBinnedQualErrfun` is provided
+for environments with dada2 < 1.32.
+
 Note that after denoising into ASVs, the pipeline by default will filter to ASVs that
 exist in a minimum of 2 samples and must have at least 5 supporting reads. These can be
 changed using `--min_asv_totalfreq` and `--min_asv_sample` parameters. Set both to zeros

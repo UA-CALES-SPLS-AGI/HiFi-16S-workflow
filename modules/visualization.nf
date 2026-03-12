@@ -1,6 +1,6 @@
 process qiime2_phylogeny_diversity {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/results/phylogeny_diversity", mode: params.publish_dir_mode
     label 'cpu8' 
 
@@ -77,8 +77,8 @@ process qiime2_phylogeny_diversity {
 }
 
 process barplot {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/results", mode: params.publish_dir_mode
     label 'cpu_def'
 
@@ -100,8 +100,8 @@ process barplot {
 }
 
 process barplot_nb {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/results", mode: params.publish_dir_mode
     label 'cpu_def'
 
@@ -207,8 +207,8 @@ process html_rep_skip_cutadapt {
 }
 
 process krona_plot {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/results", mode: params.publish_dir_mode
     label 'cpu_def'
     errorStrategy = 'ignore'

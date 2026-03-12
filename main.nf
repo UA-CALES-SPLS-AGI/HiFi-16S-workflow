@@ -81,6 +81,7 @@ log_text = """
     maxEE parameter for DADA2 filterAndTrim: $params.max_ee
     minQ parameter for DADA2 filterAndTrim: $params.minQ
     Pooling method for DADA2 denoise process: $params.pooling_method
+    DADA2 error model mode: $params.error_model
     Minimum number of samples required to keep any ASV: $dynamic_min_asv_sample
     Minimum number of reads required to keep any ASV: $dynamic_min_asv_totalfreq 
     Taxonomy sequence database for VSEARCH: $params.vsearch_db
@@ -170,15 +171,15 @@ workflow pb16S {
 
         // DADA2 processing
         if (params.learn_error_sample) {
-            learn_error(params.learn_error_sample, params.learnError_script)
-            dada2_denoise_with_error_model(import_qiime2.out, params.dadaCCS_script, params.minQ, learn_error.out.dada2_error_model)
+            learn_error(params.learn_error_sample, params.learnError_script, params.error_model)
+            dada2_denoise_with_error_model(import_qiime2.out, params.dadaCCS_script, params.minQ, learn_error.out.dada2_error_model, params.error_model)
             mergeASV(
                 dada2_denoise_with_error_model.out.asv_seq.collect(), 
                 dada2_denoise_with_error_model.out.asv_freq.collect(), 
                 dada2_denoise_with_error_model.out.asv_stats.collect()
             )
         } else {
-            dada2_denoise(import_qiime2.out, params.dadaCCS_script, params.minQ)
+            dada2_denoise(import_qiime2.out, params.dadaCCS_script, params.minQ, params.error_model)
             mergeASV(
                 dada2_denoise.out.asv_seq.collect(), 
                 dada2_denoise.out.asv_freq.collect(), 

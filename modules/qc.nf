@@ -34,8 +34,8 @@ process QC_fastq {
 }
 
 process cutadapt {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/trimmed_primers_FASTQ", pattern: '*.fastq.gz', mode: params.publish_dir_mode
     publishDir "$params.outdir/cutadapt_summary", pattern: '*.report', mode: params.publish_dir_mode
     cpus params.cutadapt_cpu
@@ -214,8 +214,8 @@ process prepare_qiime2_manifest_skip_cutadapt {
 }
 
 process import_qiime2 {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/import_qiime", mode: params.publish_dir_mode
     label 'cpu_def'
 
@@ -239,8 +239,8 @@ process import_qiime2 {
 }
 
 process demux_summarize {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/summary_demux", mode: params.publish_dir_mode
     label 'cpu_def'
 

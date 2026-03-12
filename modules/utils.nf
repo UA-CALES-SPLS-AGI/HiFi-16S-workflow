@@ -44,6 +44,16 @@ def helpMessage() {
                             "rarefaction_depth_suggested.txt" file in the results folder
                             (default: null)
     --omegac    OMEGA_C parameter for DADA2. (default: 1e-40)
+    --error_model    DADA2 error model selection. "auto" detects quality score binning
+                     from input data and selects the best function. Options:
+                       auto - Auto-detect (recommended). Uses PacBioErrfun for Sequel/Sequel II
+                              data (Q93 present), makeBinnedQualErrfun for Revio/Kinnex/NovaSeq
+                              binned data, or loessErrfun for other continuous Q-score data.
+                       pacbio - Force PacBioErrfun (legacy Sequel/Sequel II continuous Q-scores)
+                       binned - Force makeBinnedQualErrfun (for binned Q-score platforms:
+                                Revio/Kinnex, NovaSeq/NextSeq, ONT)
+                       loess - Force loessErrfun (standard Illumina with continuous Q-scores)
+                     (default: auto)
     --learn_error_sample    Use this FASTQ to learn error model for DADA2 (e.g. low complexity
                             control in the same sequencing run with same library prep)
     --dada2_cpu    Number of threads for DADA2 denoising (default: 8)
@@ -94,8 +104,8 @@ process write_log {
 }
 
 process download_db {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$projectDir/databases", mode: "copy"
     label 'cpu_def'
 
@@ -114,8 +124,8 @@ process download_db {
     wget -N --content-disposition 'https://zenodo.org/records/13984843/files/GTDB_bac120_arc53_ssu_r220_fullTaxo.fa.gz?download=1'
     
     echo "Downloading SILVA sequences and taxonomies for VSEARCH..."
-    wget -N --content-disposition 'https://data.qiime2.org/2024.10/common/silva-138-99-seqs.qza'
-    wget -N --content-disposition 'https://data.qiime2.org/2024.10/common/silva-138-99-tax.qza'
+    wget -N --content-disposition 'https://data.qiime2.org/2026.1/common/silva-138-99-seqs.qza'
+    wget -N --content-disposition 'https://data.qiime2.org/2026.1/common/silva-138-99-tax.qza'
 
     echo "Downloading GTDB database for VSEARCH..."
     wget 'https://data.gtdb.ecogenomic.org/releases/release220/220.0/genomic_files_all/ssu_all_r220.fna.gz'

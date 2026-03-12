@@ -1,3 +1,20 @@
+# v1.0 changelog
+- Configurable DADA2 error model via `--error_model` parameter (auto/pacbio/binned/loess).
+  Auto-detection selects the correct error function based on quality score distribution:
+  PacBioErrfun for Sequel/Sequel II, makeBinnedQualErrfun for Revio/Kinnex/NovaSeq binned data,
+  loessErrfun for continuous Q-score platforms. Includes polyfill for dada2 < 1.32.
+- Updated QIIME2 from 2024.10 to 2026.1 (container and conda env).
+  - Breaking change handled: `feature-table summarize` now produces additional outputs
+    (sample_frequencies.qza, feature_frequencies.qza) as it was replaced by `summarize_plus`.
+- Fixed pre-existing bug: `dada2_denoise_with_error_model` sed anchor never matched, so
+  pre-learned error models via `--learn_error_sample` were silently not loaded.
+- Fixed typo in `filter_dada2` process (`/para--p-min-frequency`).
+- Added mermaid pipeline dataflow diagram to README.
+- Added error model documentation to pipeline_overview.md.
+- Decoupled `learn_error` process from QIIME2 conda env: now uses a lightweight
+  `dada2-r.yml` env (R >= 4.4, dada2 >= 1.32) for native `makeBinnedQualErrfun`.
+  Container mode retains QIIME2 image as fallback (polyfill handles dada2 < 1.32).
+
 # v0.9 changelog
 - Refactored codes, split sections into modules
 - Added GreenGenes 2024.10, updated GTDB to r220, and Silva to 138.2, please rerun download_db to get the latest version

@@ -16,9 +16,66 @@
 
 ![alt text](misc/pipeline_workflow.png "Workflow diagram")
 
-This Nextflow pipeline is designed to process PacBio HiFi full-length 16S data into high- quality amplicon sequence variants (ASVs) using `QIIME 2` and `DADA2`.
+This Nextflow pipeline is designed to process PacBio HiFi full-length 16S data into high-quality amplicon sequence variants (ASVs) using `QIIME 2` and `DADA2`.
 The pipeline provides a set of visualizations using the `QIIME 2` framework for interactive plotting. The pipeline generates an HTML report for
 the important statistics and top taxonomies. The outputs and stages of this pipeline are documented [here](pipeline_overview.md).
+
+### Pipeline data flow
+
+```mermaid
+flowchart TD
+    A[/"Input: samples.tsv + metadata.tsv"/] --> B["QC (seqkit)"]
+    B --> C{Skip primer trim?}
+    C -->|No| D["Primer trimming (cutadapt)"]
+    C -->|Yes| E["Skip cutadapt"]
+    D --> F["Post-trim QC"]
+    F --> G["Import to QIIME 2"]
+    E --> G
+
+    G --> H["Demux summarize"]
+    G --> I{Error model provided?}
+
+    I -->|"--learn_error_sample"| J["Learn error model\n(learnError.R)"]
+    J --> K["Denoise with pre-learned\nerror model"]
+    I -->|Default| L["DADA2 denoise-ccs\n(per-batch error learning)"]
+
+    subgraph errmodel ["Error Model Selection (--error_model)"]
+        direction TB
+        M{"Auto-detect\nQ-score distribution"}
+        M -->|"Q93 present\n(Sequel/Sequel II)"| N["PacBioErrfun"]
+        M -->|"≤15 unique Q values\n(Revio/Kinnex/NovaSeq/ONT)"| O["makeBinnedQualErrfun"]
+        M -->|"Continuous Q-scores\n(older Illumina)"| P["loessErrfun"]
+    end
+
+    J -.-> errmodel
+    L -.-> errmodel
+
+    K --> Q["Merge ASVs"]
+    L --> Q
+    Q --> R["Filter ASVs\n(min_asv_totalfreq / min_asv_sample)"]
+
+    R --> S["Taxonomy classification"]
+    S --> S1["VSEARCH"]
+    S --> S2["Naive Bayes\n(DADA2 assignTaxonomy)"]
+
+    R --> T["Phylogenetic tree\n(MAFFT + FastTree)"]
+    T --> U["Core diversity metrics\n(alpha + beta diversity)"]
+
+    R --> V["Rarefaction curves"]
+
+    S1 --> W["BIOM export"]
+    S2 --> W
+
+    W --> X["HTML Report"]
+    U --> X
+    V --> X
+
+    W -.->|Optional| Y["PICRUSt2"]
+
+    style errmodel fill:#f0f4ff,stroke:#4a6fa5,stroke-width:2px
+    style A fill:#e8f5e9,stroke:#2e7d32
+    style X fill:#fff3e0,stroke:#ef6c00
+```
 
 We provide a sample report generated using this pipeline based on 8 replicates from the ATCC MSA-1003
 mock community sequenced on a Sequel II system ([Link](https://www.pacb.com/connect/datasets/)). Right-click this
@@ -85,8 +142,17 @@ nextflow run main.nf --help
             will be removed (default: 0)
   --min_len    Minimum length of sequences to keep (default: 1000)
   --max_len    Maximum length of sequences to keep (default: 1600)
-  --pooling_method    QIIME 2 pooling method for DADA2 denoise see QIIME 2 
-                      documentation for more details (default: "pseudo", alternative: "independent") 
+  --pooling_method    QIIME 2 pooling method for DADA2 denoise see QIIME 2
+                      documentation for more details (default: "pseudo", alternative: "independent")
+  --error_model    DADA2 error model for learnErrors. "auto" detects quality score binning
+                   from input data and selects the best function. Options:
+                     auto - Auto-detect (recommended). Selects PacBioErrfun for Sequel/Sequel II
+                            data, makeBinnedQualErrfun for Revio/Kinnex/NovaSeq binned data,
+                            or loessErrfun for other continuous Q-score data.
+                     pacbio - Force PacBioErrfun (legacy Sequel/Sequel II)
+                     binned - Force makeBinnedQualErrfun (Revio/Kinnex, NovaSeq, ONT)
+                     loess - Force loessErrfun (standard Illumina)
+                   (default: auto)
   --maxreject    max-reject parameter for VSEARCH taxonomy classification method in QIIME 2
                  (default: 100)
   --maxaccept    max-accept parameter for VSEARCH taxonomy classification method in QIIME 2

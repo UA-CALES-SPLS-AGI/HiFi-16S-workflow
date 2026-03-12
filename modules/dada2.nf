@@ -1,12 +1,15 @@
 process learn_error {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    // Pure R process: use lightweight dada2-only env for native makeBinnedQualErrfun (>= 1.32).
+    // Container mode falls back to QIIME2 image (dada2 1.30) with polyfill.
+    conda (params.enable_conda ? "$projectDir/env/dada2-r.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
     cpus params.dada2_cpu
 
     input:
-    path error_sample 
+    path error_sample
     path learnError_script
+    val(error_model)
 
     output:
     path "errorfun.rds", emit: dada2_error_model
@@ -14,13 +17,13 @@ process learn_error {
 
     script:
     """
-    Rscript --vanilla ${learnError_script} ${error_sample} $task.cpus
+    Rscript --vanilla ${learnError_script} ${error_sample} $task.cpus ${error_model}
     """
 }
 
 process dada2_denoise {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
     cpus params.dada2_cpu
 
@@ -28,6 +31,7 @@ process dada2_denoise {
     path samples_qza
     path dada_ccs_script
     val(minQ)
+    val(error_model)
 
     output:
     path "dada2-ccs_rep*.qza", emit: asv_seq
@@ -43,7 +47,8 @@ process dada2_denoise {
     sed -i 's/OMEGA_C=1e-40/OMEGA_C=$params.omegac/g' dada2_custom_script/run_dada.R
     chmod +x dada2_custom_script/run_dada.R
     export PATH="./dada2_custom_script:\$PATH"
-    
+    export ERROR_MODEL_MODE="${error_model}"
+
     qiime dada2 denoise-ccs --i-demultiplexed-seqs $samples_qza \
         --o-table dada2-ccs_table.qza \
         --o-representative-sequences dada2-ccs_rep.qza \
@@ -58,8 +63,8 @@ process dada2_denoise {
 }
 
 process dada2_denoise_with_error_model {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
     cpus params.dada2_cpu
 
@@ -68,11 +73,12 @@ process dada2_denoise_with_error_model {
     path dada_ccs_script
     val(minQ)
     path error_model
+    val(error_model_mode)
 
     output:
     path "dada2-ccs_rep*.qza", emit: asv_seq
     path "dada2-ccs_table*.qza", emit: asv_freq
-    path "dada2-ccs_stats*.qza", emit:asv_stats
+    path "dada2-ccs_stats*.qza", emit: asv_stats
     path "seqtab_nochim*.rds", emit: dada2_rds
 
     script:
@@ -81,9 +87,10 @@ process dada2_denoise_with_error_model {
     cp $dada_ccs_script dada2_custom_script/run_dada.R
     sed -i 's/OMEGA_C=1e-40/OMEGA_C=$params.omegac/g' dada2_custom_script/run_dada.R
     sed -i '/### LEARN ERROR RATES ###/,/### PROCESS ALL SAMPLES ###/ s/^/#/' dada2_custom_script/run_dada.R
-    sed -i '/#### LEARN ERROR RATES ###/a err <- readRDS("$error_model")' dada2_custom_script/run_dada.R
+    sed -i '/^#### LEARN ERROR RATES ###/a err <- readRDS("$error_model")' dada2_custom_script/run_dada.R
     chmod +x dada2_custom_script/run_dada.R
     export PATH="./dada2_custom_script:\$PATH"
+    export ERROR_MODEL_MODE="${error_model_mode}"
 
     qiime dada2 denoise-ccs --i-demultiplexed-seqs $samples_qza \
         --o-table dada2-ccs_table.qza \
@@ -99,8 +106,8 @@ process dada2_denoise_with_error_model {
 }
 
 process mergeASV {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
     cpus params.dada2_cpu
 
@@ -136,8 +143,8 @@ process mergeASV {
 }
 
 process filter_dada2 {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
     cpus params.dada2_cpu
 
@@ -173,7 +180,7 @@ process filter_dada2 {
     then
         qiime feature-table filter-features \
             --i-table $asv_table \
-            /para--p-min-frequency $min_asv_totalfreq \
+            --p-min-frequency $min_asv_totalfreq \
             --p-filter-empty-samples \
             --o-filtered-table dada2-ccs_table_filtered.qza
     else
@@ -192,8 +199,8 @@ process filter_dada2 {
 }
 
 process dada2_qc {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/results", mode: params.publish_dir_mode
     label 'cpu_def'
 
@@ -218,6 +225,8 @@ process dada2_qc {
 
     qiime feature-table summarize --i-table $asv_freq \
         --o-visualization dada2_table.qzv \
+        --o-sample-frequencies sample_frequencies.qza \
+        --o-feature-frequencies feature_frequencies.qza \
         --m-sample-metadata-file $metadata
 
     qiime tools export --input-path dada2_table.qzv \
@@ -267,8 +276,8 @@ process dada2_qc {
 }
 
 process dada2_rarefaction {
-    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2024.10-py310-ubuntu-conda.yml" : null)
-    container "quay.io/qiime2/amplicon@sha256:4038fd785bf4e76ddd6ec7a7f57abe94cdca6c5cd0a93d0924971a74eabd7cf2"
+    conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
+    container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
     publishDir "$params.outdir/results", mode: params.publish_dir_mode
     label 'cpu_def'
 

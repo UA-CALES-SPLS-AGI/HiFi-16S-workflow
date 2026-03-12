@@ -1,0 +1,8 @@
+name: dada2-r
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base>=4.4
+  - bioconductor-dada2>=1.32
+  - r-ggplot2
