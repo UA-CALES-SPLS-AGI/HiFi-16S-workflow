@@ -80,6 +80,8 @@ def helpMessage() {
                     run the pipeline. Databases will be downloaded to a folder "databases"
                     in the Nextflow pipeline directory.
     --publish_dir_mode    Nextflow "publishDir" mode (default: copy)
+    --save_intermediates  Save intermediate files (filtered FASTQs, trimmed FASTQs,
+                          QIIME2 import artifacts, DADA2 working files) (default: false)
     --version    Output version
     """
 }

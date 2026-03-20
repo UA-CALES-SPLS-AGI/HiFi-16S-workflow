@@ -217,6 +217,7 @@ An optional `pool` column splits samples into separate DADA2 denoising groups (s
 | `--run_picrust2` | `false` | Run PICRUSt2 pathway prediction |
 | `--rarefaction_depth` | `null` | Manual rarefaction depth (auto-calculated if null) |
 | `--colorby` | `condition` | Metadata column for coloring MDS plots |
+| `--save_intermediates` | `false` | Save intermediate files (filtered/trimmed FASTQs, QIIME2 artifacts, DADA2 working files) |
 
 ## Profiles
 
@@ -270,12 +271,6 @@ Override with `--error_model pacbio`, `--error_model binned`, or `--error_model 
 
 ```
 results/
-├── filtered_input_FASTQ/         # Quality-filtered FASTQs
-├── trimmed_primers_FASTQ/        # Primer-trimmed FASTQs
-├── cutadapt_summary/             # Cutadapt reports
-├── import_qiime/                 # QIIME 2 artifacts (.qza)
-├── summary_demux/                # Per-sample read counts
-├── dada2/                        # ASV sequences, tables, error plots
 ├── nb_tax/                       # Per-database Naive Bayes results
 ├── results/
 │   ├── reads_QC/                 # Aggregated QC statistics
@@ -290,6 +285,14 @@ results/
 ├── parameters.txt                # Pipeline parameters log
 ├── execution_report.html         # Nextflow execution report
 └── execution_timeline.html       # Nextflow timeline
+
+# With --save_intermediates:
+├── filtered_input_FASTQ/         # Quality-filtered FASTQs
+├── trimmed_primers_FASTQ/        # Primer-trimmed FASTQs
+├── cutadapt_summary/             # Cutadapt reports
+├── import_qiime/                 # QIIME 2 artifacts (.qza)
+├── summary_demux/                # Per-sample read counts
+└── dada2/                        # ASV sequences, tables, error plots
 ```
 
 ## Tools

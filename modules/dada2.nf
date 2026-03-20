@@ -3,7 +3,7 @@ process learn_error {
     // Container mode falls back to QIIME2 image (dada2 1.30) with polyfill.
     conda (params.enable_conda ? "$projectDir/env/dada2-r.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
+    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode, enabled: params.save_intermediates
     cpus params.dada2_cpu
 
     input:
@@ -24,7 +24,7 @@ process learn_error {
 process dada2_denoise {
     conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
+    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode, enabled: params.save_intermediates
     cpus params.dada2_cpu
 
     input:
@@ -65,7 +65,7 @@ process dada2_denoise {
 process dada2_denoise_with_error_model {
     conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
+    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode, enabled: params.save_intermediates
     cpus params.dada2_cpu
 
     input:
@@ -108,7 +108,7 @@ process dada2_denoise_with_error_model {
 process mergeASV {
     conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
+    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode, enabled: params.save_intermediates
     cpus params.dada2_cpu
 
     input:
@@ -145,7 +145,7 @@ process mergeASV {
 process filter_dada2 {
     conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode
+    publishDir "$params.outdir/dada2", mode: params.publish_dir_mode, enabled: params.save_intermediates
     cpus params.dada2_cpu
 
     input:

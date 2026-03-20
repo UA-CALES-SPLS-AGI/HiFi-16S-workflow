@@ -2,7 +2,7 @@ process QC_fastq {
     conda (params.enable_conda ? "$projectDir/env/pb-16s-pbtools.yml" : null)
     container "kpinpb/pb-16s-nf-tools:latest"
     label 'cpu8'
-    publishDir "$params.outdir/filtered_input_FASTQ", pattern: '*filterQ*.fastq.gz', mode: params.publish_dir_mode
+    publishDir "$params.outdir/filtered_input_FASTQ", pattern: '*filterQ*.fastq.gz', mode: params.publish_dir_mode, enabled: params.save_intermediates
 
     input:
     tuple val(sampleID), path(sampleFASTQ)
@@ -36,8 +36,8 @@ process QC_fastq {
 process cutadapt {
     conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/trimmed_primers_FASTQ", pattern: '*.fastq.gz', mode: params.publish_dir_mode
-    publishDir "$params.outdir/cutadapt_summary", pattern: '*.report', mode: params.publish_dir_mode
+    publishDir "$params.outdir/trimmed_primers_FASTQ", pattern: '*.fastq.gz', mode: params.publish_dir_mode, enabled: params.save_intermediates
+    publishDir "$params.outdir/cutadapt_summary", pattern: '*.report', mode: params.publish_dir_mode, enabled: params.save_intermediates
     cpus params.cutadapt_cpu
 
     input:
@@ -70,7 +70,7 @@ process QC_fastq_post_trim {
     conda (params.enable_conda ? "$projectDir/env/pb-16s-pbtools.yml" : null)
     container "kpinpb/pb-16s-nf-tools:latest"
     label 'cpu8'
-    publishDir "$params.outdir/filtered_input_FASTQ", pattern: '*post_trim.tsv', mode: params.publish_dir_mode
+    publishDir "$params.outdir/filtered_input_FASTQ", pattern: '*post_trim.tsv', mode: params.publish_dir_mode, enabled: params.save_intermediates
 
     input:
     tuple val(sampleID), path(sampleFASTQ)
@@ -216,7 +216,7 @@ process prepare_qiime2_manifest_skip_cutadapt {
 process import_qiime2 {
     conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/import_qiime", mode: params.publish_dir_mode
+    publishDir "$params.outdir/import_qiime", mode: params.publish_dir_mode, enabled: params.save_intermediates
     label 'cpu_def'
 
 
@@ -241,7 +241,7 @@ process import_qiime2 {
 process demux_summarize {
     conda (params.enable_conda ? "$projectDir/env/qiime2-amplicon-2026.1-ubuntu-conda.yml" : null)
     container "quay.io/qiime2/amplicon@sha256:d4ddc1d2fe434035e5f2e49e6b85003a038dbb0435b802c41745bf4fece170d3"
-    publishDir "$params.outdir/summary_demux", mode: params.publish_dir_mode
+    publishDir "$params.outdir/summary_demux", mode: params.publish_dir_mode, enabled: params.save_intermediates
     label 'cpu_def'
 
     input:
