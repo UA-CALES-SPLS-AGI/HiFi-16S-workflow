@@ -261,8 +261,8 @@ workflow {
 }
 
 workflow.onComplete {
-    if (workflow.success) {
+ /*   if (workflow.success) {
         log.info "Cleaning work directory for run: ${workflow.runName}"
         ["nextflow", "clean", workflow.runName, "-f"].execute()
-    }
+    } */
 }
