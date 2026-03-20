@@ -259,3 +259,13 @@ workflow pb16S {
 workflow {
     pb16S()
 }
+
+workflow.onComplete {
+    if (workflow.success && params.publish_dir_mode != "symlink") {
+        file(workflow.workDir).deleteDir()
+        log.info "Cleaned up work directory: ${workflow.workDir}"
+    } else if (workflow.success && params.publish_dir_mode == "symlink") {
+        log.warn "Skipping work directory cleanup: publish_dir_mode is 'symlink'. " +
+                 "Set --publish_dir_mode copy to enable automatic cleanup."
+    }
+}
