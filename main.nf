@@ -262,8 +262,8 @@ workflow {
 
 workflow.onComplete {
     if (workflow.success && params.publish_dir_mode != "symlink") {
-        file(workflow.workDir).deleteDir()
-        log.info "Cleaned up work directory: ${workflow.workDir}"
+        log.info "Cleaning work directory for run: ${workflow.runName}"
+        ["nextflow", "clean", workflow.runName, "-f"].execute()
     } else if (workflow.success && params.publish_dir_mode == "symlink") {
         log.warn "Skipping work directory cleanup: publish_dir_mode is 'symlink'. " +
                  "Set --publish_dir_mode copy to enable automatic cleanup."
