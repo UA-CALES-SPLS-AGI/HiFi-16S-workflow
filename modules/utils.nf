@@ -79,8 +79,7 @@ def helpMessage() {
     --download_db    Download databases needed for taxonomy classification only. Will not
                     run the pipeline. Databases will be downloaded to a folder "databases"
                     in the Nextflow pipeline directory.
-    --publish_dir_mode    Outputs mode based on Nextflow "publishDir" directive. Specify "copy"
-                            if requires hard copies. (default: symlink)
+    --publish_dir_mode    Nextflow "publishDir" mode (default: copy)
     --version    Output version
     """
 }

@@ -94,11 +94,11 @@ The `.nextflow/` directory (run history, task cache) is always written to the **
 
 ### Automatic cleanup
 
-On successful completion the pipeline automatically runs `nextflow clean` to remove the work directory entries for that specific run — but **only when `--publish_dir_mode copy` is set**. The default `symlink` mode skips cleanup with a warning since deleting `work/` would break symlinked results. Failed runs are always left intact for `-resume`.
+On successful completion the pipeline automatically runs `nextflow clean` to remove the work directory entries for that specific run. Failed runs are left intact so you can fix the issue and resume.
 
 ### Output
 
-By default, results are symlinked to `--outdir`. Use `--publish_dir_mode copy` for hard copies that survive work directory cleanup.
+Final results are **copied** (not symlinked) to `--outdir`, so they remain intact after work directory cleanup.
 
 ## Quick Start
 
@@ -161,7 +161,7 @@ An optional `pool` column splits samples into separate DADA2 denoising groups (s
 | `--input` | required | Path to sample TSV |
 | `--metadata` | required | Path to metadata TSV |
 | `--outdir` | `results` | Output directory |
-| `--publish_dir_mode` | `symlink` | Nextflow publishDir mode (`symlink` or `copy`) |
+| `--publish_dir_mode` | `copy` | Nextflow publishDir mode |
 
 ### QC and Trimming
 
