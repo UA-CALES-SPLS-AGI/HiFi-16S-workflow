@@ -7,7 +7,7 @@ repository-code: "https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow"
 abstract: "This is a maintained fork of the original HiFi-16S-workflow Nextflow pipeline developed by Chua Khi Pin at Pacific Biosciences."
 authors:
   - family-names: "Bartelme"
-    given-names: "Ryan A."
+    given-names: "Ryan"
     affiliation: "The University of Arizona"
   - family-names: "Sobel-Sorenson"
     given-names: "Chandler"

@@ -321,4 +321,4 @@ This repository is a modified, actively maintained fork of the original [HiFi-16
 If you use this modified Nextflow pipeline in your research, please cite this repository to ensure accurate reproducibility:
 
 **APA Format:**
-> Bartelme, R. A., & Sobel-Sorenson, C. (2026). *HiFi-16S-workflow (AGI fork)* [Software]. GitHub. https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow
+> Bartelme, R., & Sobel-Sorenson, C. (2026). *HiFi-16S-workflow (AGI fork)* [Software]. GitHub. https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow
