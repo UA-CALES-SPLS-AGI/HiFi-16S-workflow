@@ -53,6 +53,7 @@ process dada2_denoise {
         --o-table dada2-ccs_table.qza \
         --o-representative-sequences dada2-ccs_rep.qza \
         --o-denoising-stats dada2-ccs_stats.qza \
+        --o-base-transition-stats dada2-ccs_base_transition.qza \
         --p-min-len $params.min_len --p-max-len $params.max_len \
         --p-max-ee $params.max_ee \
         --p-front 'none' \
@@ -96,6 +97,7 @@ process dada2_denoise_with_error_model {
         --o-table dada2-ccs_table.qza \
         --o-representative-sequences dada2-ccs_rep.qza \
         --o-denoising-stats dada2-ccs_stats.qza \
+        --o-base-transition-stats dada2-ccs_base_transition.qza \
         --p-min-len $params.min_len --p-max-len $params.max_len \
         --p-max-ee $params.max_ee \
         --p-front 'none' \
