@@ -202,7 +202,9 @@ option_list = list(
   make_option(c("--homopolymer_gap_penalty"), action="store", default='NULL', type='character',
               help="The cost of gaps in homopolymer regions (>=3 repeated bases).Default is NULL, which causes homopolymer gaps to be treated as normal gaps."),
   make_option(c("--band_size"), action="store", default='NULL', type='character',
-              help="When set, banded Needleman-Wunsch alignments are performed.")
+              help="When set, banded Needleman-Wunsch alignments are performed."),
+  make_option(c("--output_err_track"), action="store", default='NULL', type='character',
+              help="File path to error tracking tsv file for base transition stats.")
 )
 opt = parse_args(OptionParser(option_list=option_list))
 
@@ -251,6 +253,7 @@ if (opt$homopolymer_gap_penalty=='NULL'){
   }
 }
 BAND_SIZE <- if(opt$band_size=='NULL') NULL else as.integer(opt$band_size)
+out.err.track <- opt$output_err_track
 
 ### VALIDATE ARGUMENTS ###
 # Input directory is expected to contain .fastq.gz file(s)
@@ -475,6 +478,12 @@ if(primer.removed.dir!='NULL'){#for CCS read analysis
 }else{#for sinlge/pyro read analysis
   err <- suppressWarnings(learnErrors(filts, nreads=nreads.learn, errorEstimationFunction=errfun, multithread=multithread,
                                       HOMOPOLYMER_GAP_PENALTY=HOMOPOLYMER_GAP_PENALTY, BAND_SIZE=BAND_SIZE))
+}
+
+### Write error tracking (base transition stats) ###
+if(out.err.track != 'NULL') {
+  err_rates <- t(err$err_out)
+  write.table(err_rates, out.err.track, sep="\t", row.names=TRUE, col.names=NA, quote=FALSE)
 }
 
 ### PROCESS ALL SAMPLES ###
