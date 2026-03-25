@@ -4,6 +4,7 @@ title: "HiFi-16S-workflow (AGI Fork)"
 url: "https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow"
 repository-code: "https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow"
 notes: "This is a maintained fork of the original HiFi-16S-workflow Nextflow pipeline developed by Chua Khi Pin at Pacific Biosciences."
+date-released: 2026-03-25
 authors:
   - family-names: "Bartelme"
     given-names: "Ryan A."
