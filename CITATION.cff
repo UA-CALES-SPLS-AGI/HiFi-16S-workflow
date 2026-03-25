@@ -1,10 +1,10 @@
 cff-version: 1.2.0
 message: "If you use this modified workflow in your research, please cite it as below."
 title: "HiFi-16S-workflow (AGI Fork)"
+date-released: "2026-03-25"
 url: "https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow"
 repository-code: "https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow"
-notes: "This is a maintained fork of the original HiFi-16S-workflow Nextflow pipeline developed by Chua Khi Pin at Pacific Biosciences."
-date-released: 2026-03-25
+abstract: "This is a maintained fork of the original HiFi-16S-workflow Nextflow pipeline developed by Chua Khi Pin at Pacific Biosciences."
 authors:
   - family-names: "Bartelme"
     given-names: "Ryan A."
