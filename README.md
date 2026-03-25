@@ -314,6 +314,11 @@ results/
 - Singularity, Docker, or conda
 - At least 32 CPUs recommended (64+ GB memory for diverse samples)
 
-## Credits
+## Citation and Acknowledgements
 
-Derived from PacBio's [pb-16S-nf](https://github.com/PacificBiosciences/pb-16S-nf) pipeline.
+This repository is a modified, actively maintained fork of the original [HiFi-16S-workflow](https://github.com/PacificBiosciences/HiFi-16S-workflow) created by [Chua Khi Pin](https://github.com/proteinosome) at Pacific Biosciences. 
+
+If you use this modified Nextflow pipeline in your research, please cite this repository to ensure accurate reproducibility:
+
+**APA Format:**
+> Bartelme, R. A., & Sobel-Sorenson, C. (2026). *HiFi-16S-workflow (AGI fork)* [Software]. GitHub. https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow
