@@ -14,7 +14,7 @@ This pipeline takes demultiplexed 16S amplicon FASTQ files and produces quality-
 4. **DADA2 denoising** — Error learning and denoising via `denoise-ccs` with configurable error models (auto-detects Sequel II vs Revio/Kinnex)
 5. **ASV filtering** — Remove low-abundance ASVs by total frequency and sample presence
 6. **Taxonomy classification** — VSEARCH consensus classification (GTDB r220 default) and optional Naive Bayes multi-database classification (GreenGenes2, GTDB, SILVA)
-7. **Phylogenetic diversity** — MAFFT alignment, FastTree, core diversity metrics (Bray-Curtis, UniFrac)
+7. **Phylogenetic diversity** (optional) — MAFFT alignment, FastTree, core diversity metrics (Bray-Curtis, UniFrac)
 8. **BIOM export** — Feature tables with taxonomy metadata
 9. **HTML report** — Interactive visualizations (taxonomy barplots, MDS/PCA, rarefaction curves)
 10. **PICRUSt2** (optional) — Functional pathway prediction from 16S sequences
@@ -22,83 +22,51 @@ This pipeline takes demultiplexed 16S amplicon FASTQ files and produces quality-
 ### Pipeline Diagram
 
 ```mermaid
-flowchart TD
-    A[/"Input: samples.tsv + metadata.tsv"/]:::input --> B["QC (seqkit)"]
-    B --> C{Skip primer trim?}
-    C -->|No| D["Primer trimming (cutadapt)"]
+graph TD
+    A[/"<b>Input</b><br/>samples.tsv + metadata.tsv"/]:::input --> B["<b>QC</b><br/>seqkit filter + stats"]
+
+    B --> C{"Skip primer<br/>trim?"}
+    C -->|No| D["<b>Cutadapt</b><br/>Trim primers · orient reads"]
     C -->|Yes| E["Skip cutadapt"]
-    D --> F["Post-trim QC"]
-    F --> G["Import to QIIME 2"]
+    D --> F["<b>Post-trim QC</b><br/>seqkit stats"]
+    F --> G["<b>Import to QIIME 2</b>"]
     E --> G
 
-    G --> H["Demux summarize"]
-    G --> I{Error model provided?}
+    G --> H["<b>Demux summarize</b>"]
 
-    I -->|"--learn_error_sample"| J["Learn error model"]
-    J --> K["Denoise with pre-learned\nerror model"]
-    I -->|Default| L["DADA2 denoise-ccs"]
+    G --> I{"--learn_error_sample<br/>provided?"}
+    I -->|Yes| J["<b>Learn error model</b><br/>learnErrors() from<br/>specified FASTQ"]
+    J --> K["<b>DADA2 denoise-ccs</b><br/>shared pre-learned model"]
+    I -->|No| L["<b>DADA2 denoise-ccs</b><br/>per-pool error learning"]
 
-    K --> Q["Merge ASVs"]
-    L --> Q
-    Q --> R["Filter ASVs"]
+    K --> M["<b>Merge ASVs</b><br/>across pooling groups"]
+    L --> M
 
-    R --> S["Taxonomy classification"]
-    S --> S1["VSEARCH"]
-    S --> S2["Naive Bayes*"]
+    M --> N["<b>Filter ASVs</b><br/>min_asv_totalfreq · min_asv_sample"]
+    N --> O["<b>DADA2 QC</b><br/>denoising stats · rarefaction depth"]
 
-    R --> T["Phylogenetic tree\n(MAFFT + FastTree)"]
-    T --> U["Core diversity metrics"]
+    N --> P["<b>VSEARCH</b><br/>consensus taxonomy<br/>(GTDB r220)"]
+    N -.-> Q["<b>Naive Bayes*</b><br/>GG2 · GTDB · SILVA"]
 
-    R --> V["Rarefaction curves"]
+    N -.-> R["<b>Phylogenetic tree*</b><br/>MAFFT + FastTree"]
+    R -.-> S["<b>Core diversity</b><br/>Bray-Curtis · UniFrac"]
 
-    S1 --> W["BIOM export"]
-    S2 --> W
+    N --> T["<b>Rarefaction curves</b>"]
 
-    W --> X["HTML Report"]:::output
-    U --> X
-    V --> X
+    P --> U["<b>BIOM export</b>"]
+    Q -.-> U
 
-    W -.->|Optional| Y["PICRUSt2"]
+    U --> V["<b>HTML Report</b>"]:::output
+    S -.-> V
+    T --> V
+
+    U -.-> W["<b>PICRUSt2*</b><br/>Functional prediction"]
 
     classDef input fill:#24B064,stroke:#333,color:#fff
     classDef output fill:#24B064,stroke:#333,color:#fff
 ```
 
-## Running the Pipeline
-
-16S analysis is typically fast (2-12 hours) but can be longer for highly diverse environmental samples. Launch from the pipeline directory inside a terminal multiplexer:
-
-```bash
-# Start (or reattach to) a tmux session
-tmux new -s hifi16s
-# or: tmux attach -t hifi16s
-
-cd /path/to/HiFi-16S-workflow
-```
-
-### Work directory
-
-Nextflow writes intermediate files to a `work/` directory. Point it at a volume with sufficient space using `-w`:
-
-```bash
-nextflow run main.nf \
-    -profile singularity \
-    --input samples.tsv \
-    --metadata metadata.tsv \
-    -w /scratch/nf-work/hifi16s \
-    --publish_dir_mode copy \
-    --outdir results
-```
-
-The `.nextflow/` directory (run history, task cache) is always written to the **launch directory** — keep this separate from the work directory.
-
-### Automatic cleanup
-
-On successful completion the pipeline automatically runs `nextflow clean` to remove the work directory entries for that specific run. Failed runs are left intact so you can fix the issue and resume.
-
-### Output
-
-Final results are **copied** (not symlinked) to `--outdir`, so they remain intact after work directory cleanup.
+\* Dashed edges = optional (`--skip_nb`, `--skip_phylotree`, `--run_picrust2`)
 
 ## Quick Start
 
@@ -127,6 +95,34 @@ nextflow run main.nf \
     -profile singularity \
     --outdir results
 ```
+
+## Running the Pipeline
+
+16S analysis is typically fast (2-12 hours) but can be longer for highly diverse environmental samples. Launch from the pipeline directory inside a terminal multiplexer:
+
+```bash
+tmux new -s hifi16s
+cd /path/to/HiFi-16S-workflow
+```
+
+### Work directory
+
+Nextflow writes intermediate files to a `work/` directory. Point it at a volume with sufficient space using `-w`:
+
+```bash
+nextflow run main.nf \
+    -profile singularity \
+    --input samples.tsv \
+    --metadata metadata.tsv \
+    -w /scratch/nf-work/hifi16s \
+    --outdir results
+```
+
+The `.nextflow/` directory (run history, task cache) is always written to the **launch directory** — keep this separate from the work directory.
+
+### Output
+
+Final results are **copied** (not symlinked) to `--outdir` by default (`--publish_dir_mode copy`), so they remain available after the work directory is cleaned.
 
 ## Input
 
@@ -181,6 +177,7 @@ An optional `pool` column splits samples into separate DADA2 denoising groups (s
 | `--max_len` | `1600` | Maximum amplicon length |
 | `--max_ee` | `2` | Maximum expected errors |
 | `--minQ` | `0` | Minimum base quality |
+| `--omegac` | `1e-40` | DADA2 OMEGA_C parameter for chimera detection |
 | `--pooling_method` | `pseudo` | DADA2 pooling (`pseudo` or `independent`) |
 | `--error_model` | `auto` | Error model: `auto`, `pacbio`, `binned`, `loess` |
 | `--learn_error_sample` | `false` | FASTQ path for external error learning |
@@ -189,8 +186,8 @@ An optional `pool` column splits samples into separate DADA2 denoising groups (s
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `--min_asv_totalfreq` | `5` | Minimum total reads across all samples per ASV |
-| `--min_asv_sample` | `1` | Minimum samples an ASV must appear in |
+| `--min_asv_totalfreq` | `5` | Minimum total reads across all samples per ASV (auto-set to 0 for single sample) |
+| `--min_asv_sample` | `1` | Minimum samples an ASV must appear in (auto-set to 0 for single sample) |
 
 ### Taxonomy
 
@@ -206,16 +203,17 @@ An optional `pool` column splits samples into separate DADA2 denoising groups (s
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `--dada2_cpu` | `8` | Threads for DADA2 denoising |
-| `--vsearch_cpu` | `8` | Threads for VSEARCH classification |
-| `--cutadapt_cpu` | `16` | Threads for cutadapt |
+| `--dada2_cpu` | `256` | Threads for DADA2 denoising |
+| `--vsearch_cpu` | `256` | Threads for VSEARCH classification |
+| `--cutadapt_cpu` | `64` | Threads for cutadapt |
 
 ### Optional
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `--run_picrust2` | `false` | Run PICRUSt2 pathway prediction |
-| `--rarefaction_depth` | `null` | Manual rarefaction depth (auto-calculated if null) |
+| `--skip_phylotree` | `false` | Skip phylogenetic tree construction and diversity metrics |
+| `--rarefaction_depth` | `null` | Manual rarefaction depth (auto-calculated if not set or 0) |
 | `--colorby` | `condition` | Metadata column for coloring MDS plots |
 | `--save_intermediates` | `false` | Save intermediate files (filtered/trimmed FASTQs, QIIME2 artifacts, DADA2 working files) |
 
@@ -253,7 +251,7 @@ sample_C	water	group2
 sample_D	water	group2
 ```
 
-ASVs are merged after denoising. This is orthogonal to `--pooling_method`, which controls DADA2's internal pooling behavior within each group.
+Samples are denoised separately per group, then ASVs are merged automatically. This is orthogonal to `--pooling_method`, which controls DADA2's internal pooling behavior within each group.
 
 ## Error Model Selection
 
@@ -267,11 +265,37 @@ The `--error_model auto` setting (default) detects the sequencing platform from 
 
 Override with `--error_model pacbio`, `--error_model binned`, or `--error_model loess`.
 
+## Primer Trimming
+
+Cutadapt trims primers using **linked adapter** syntax, matching the forward primer at the 5' end and the reverse primer at the 3' end in a single pass. Reads are also reverse-complemented as needed (`--revcomp`) and only trimmed reads are kept (`--trimmed-only`).
+
+The default primers are the universal bacterial 16S V1-V9 pair:
+
+| Primer | Name | Sequence |
+|--------|------|----------|
+| Forward | F27 | `AGRGTTYGATYMTGGCTCAG` |
+| Reverse | R1492 | `AAGTCGTAACAAGGTARCY` |
+
+IUPAC degenerate bases are supported natively by cutadapt, so a single degenerate sequence covers all primer variants.
+
+### Multiplexed primer sets (not yet supported)
+
+The pipeline currently accepts a **single primer pair** via `--front_p` and `--adapter_p`. If you multiplex amplicons with different primer sets in the same library (e.g., bacterial F27/R1492 + archaeal A344F/A915R), the current pipeline will only trim and retain reads matching one pair.
+
+Cutadapt itself supports multiple primer pairs via repeated `-g` flags or a linked-adapter FASTA (`-g file:primers.fasta`). Implementing this would require:
+
+1. Accepting a primer pairs file (e.g., TSV or FASTA of linked adapters)
+2. Modifying the cutadapt process to emit one `-g` per pair
+3. No changes to DADA2 or downstream — trimmed reads are primer-agnostic
+
+A `--primer_fasta` parameter exists in the config but is currently unused (legacy from the original PacBio pipeline). This could be repurposed for multi-primer support in a future release.
+
+**Workaround**: Run the pipeline separately for each primer set using `--front_p` / `--adapter_p`, then merge the resulting BIOM tables downstream.
+
 ## Output
 
 ```
 results/
-├── nb_tax/                       # Per-database Naive Bayes results
 ├── results/
 │   ├── reads_QC/                 # Aggregated QC statistics
 │   ├── phylogeny_diversity/      # Tree, distance matrices, core metrics
@@ -282,6 +306,7 @@ results/
 │   ├── dada2_ASV.fasta           # Filtered ASV sequences
 │   ├── dada2_qc.tsv              # Denoising statistics
 │   └── alpha-rarefaction-curves.qzv
+├── nb_tax/                       # Per-database Naive Bayes results (unless --skip_nb)
 ├── parameters.txt                # Pipeline parameters log
 ├── execution_report.html         # Nextflow execution report
 └── execution_timeline.html       # Nextflow timeline
@@ -316,7 +341,7 @@ results/
 
 ## Citation and Acknowledgements
 
-This repository is a modified, actively maintained fork of the original [HiFi-16S-workflow](https://github.com/PacificBiosciences/HiFi-16S-workflow) created by [Chua Khi Pin](https://github.com/proteinosome) at Pacific Biosciences. 
+This repository is a modified, actively maintained fork of the original [HiFi-16S-workflow](https://github.com/PacificBiosciences/HiFi-16S-workflow) created by [Chua Khi Pin](https://github.com/proteinosome) at Pacific Biosciences.
 
 If you use this modified Nextflow pipeline in your research, please cite this repository to ensure accurate reproducibility:
 
