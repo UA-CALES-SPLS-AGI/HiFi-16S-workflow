@@ -189,15 +189,46 @@ An optional `pool` column splits samples into separate DADA2 denoising groups (s
 | `--min_asv_totalfreq` | `5` | Minimum total reads across all samples per ASV (auto-set to 0 for single sample) |
 | `--min_asv_sample` | `1` | Minimum samples an ASV must appear in (auto-set to 0 for single sample) |
 
-### Taxonomy
+### Taxonomy — VSEARCH (always runs)
+
+VSEARCH consensus classification runs on every pipeline execution using the GTDB r220 database by default.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `--vsearch_identity` | `0.97` | VSEARCH minimum identity threshold |
 | `--maxreject` | `100` | VSEARCH max-reject parameter |
 | `--maxaccept` | `100` | VSEARCH max-accept parameter |
-| `--skip_nb` | `false` | Skip Naive Bayes classification (VSEARCH only) |
-| `--db_to_prioritize` | `GG2` | Naive Bayes priority: `GG2`, `GTDB`, or `Silva` |
+| `--vsearch_db` | `databases/GTDB_ssu_all_r220.qza` | VSEARCH reference sequences |
+| `--vsearch_tax` | `databases/GTDB_ssu_all_r220.taxonomy.qza` | VSEARCH taxonomy annotations |
+
+### Taxonomy — Naive Bayes (optional)
+
+When enabled (default), DADA2's `assignTaxonomy()` classifies every ASV against **all three databases independently** (minBoot = 80). All three results are saved to `nb_tax/` (`silva_nb.tsv`, `gtdb_nb.tsv`, `gg2_nb.tsv`).
+
+A cascade then merges the three results into `best_taxonomy.tsv`:
+
+1. Start with the **priority database** result as the baseline (default: GG2)
+2. For any ASV where Species is `NA`, fill from the 2nd database (GTDB)
+3. Still `NA`? Fill from the 3rd database (SILVA)
+4. Repeat the same cascade for Genus-level gaps
+
+This maximizes taxonomic coverage — if GG2 classifies 90% of ASVs to species, GTDB may fill another 7%, and SILVA the remaining 2%. Each row in the output includes an `Assignment Database` column tracking which database provided that ASV's classification.
+
+The priority order for each `--db_to_prioritize` setting:
+
+| Setting | Cascade order |
+|---------|--------------|
+| `GG2` (default) | GreenGenes2 → GTDB → SILVA |
+| `GTDB` | GTDB → GreenGenes2 → SILVA |
+| `Silva` | SILVA → GreenGenes2 → GTDB |
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--skip_nb` | `false` | Skip Naive Bayes classification (use VSEARCH only) |
+| `--db_to_prioritize` | `GG2` | Starting database for NB cascade: `GG2`, `GTDB`, or `Silva` |
+| `--silva_db` | `databases/silva_nr99_v138.2_...` | SILVA training set for NB classifier |
+| `--gtdb_db` | `databases/GTDB_bac120_arc53_...` | GTDB training set for NB classifier |
+| `--gg2_db` | `databases/gg2_2024_09_...` | GreenGenes2 training set for NB classifier |
 
 ### Resources
 
