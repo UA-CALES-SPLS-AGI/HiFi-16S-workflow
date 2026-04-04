@@ -378,3 +378,8 @@ If you use this modified Nextflow pipeline in your research, please cite this re
 
 **APA Format:**
 > Bartelme, R., & Sobel-Sorenson, C. (2026). *HiFi-16S-workflow (AGI fork)* [Software]. GitHub. https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow
+
+### Suggested Methods Text
+The following may be used in your bioinformatics or data processing Methods section of your manuscript:
+
+> Full-length 16S rRNA sequences were processed into amplicon sequence variants (ASVs) using the HiFi-16S-workflow pipeline originally developed at Pacific Biosciences.  To ensure reproducibility and best practices, we utilized an actively maintained fork of the pipeline modified by the Arizona Genomics Institute.  The exact source code and execution environments used in this study are publicly available at https://github.com/UA-CALES-SPLS-AGI/HiFi-16S-workflow.
