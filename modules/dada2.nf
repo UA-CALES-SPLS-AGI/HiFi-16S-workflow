@@ -226,10 +226,10 @@ process dada2_qc {
         --o-visualization dada2_stats.qzv
 
     qiime feature-table summarize --i-table $asv_freq \
-        --o-visualization dada2_table.qzv \
+        --o-summary dada2_table.qzv \
         --o-sample-frequencies sample_frequencies.qza \
         --o-feature-frequencies feature_frequencies.qza \
-        --m-sample-metadata-file $metadata
+        --m-metadata-file $metadata
 
     qiime tools export --input-path dada2_table.qzv \
         --output-path dada2_table_summary
