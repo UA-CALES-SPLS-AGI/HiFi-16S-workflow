@@ -6,12 +6,12 @@ in demultiplexed 16S amplicon sequencing FASTQ file.
 
 ===============================================================================
 
-Author: Khi Pin, Chua
-Updated: 2024-12-17
+Authors: Khi Pin, Chua; Bartelme, Ryan; & Sobel-Sorenson, Chandler
+Updated: 2026-05-15
 */
 
 nextflow.enable.dsl=2
-version = "0.9"
+version = "1.0"
 
 // Import modules
 include { write_log } from './modules/utils'
